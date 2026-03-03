@@ -1,5 +1,6 @@
 # g2b.py
 import requests
+from urllib.parse import quote
 
 def fetch_all_pages(url: str, params: dict, page_size: int = 999) -> list[dict]:
     all_data = []
@@ -32,7 +33,7 @@ def fetch_bid_list(api_key: str, start_dt: str, end_dt: str) -> list[dict]:
     url = "http://apis.data.go.kr/1230000/ad/BidPublicInfoService/getBidPblancListInfoServc"
     params = {
         "inqryDiv": 1,
-        "serviceKey": api_key,
+        "serviceKey": quote(api_key.strip(), safe=""),
         "inqryBgnDt": start_dt,
         "inqryEndDt": end_dt,
         "type": "json",
@@ -44,7 +45,7 @@ def fetch_prebid_list(api_key: str, start_dt: str, end_dt: str) -> list[dict]:
     url = "http://apis.data.go.kr/1230000/ao/HrcspSsstndrdInfoService/getPublicPrcureThngInfoServc"
     params = {
         "inqryDiv": 1,
-        "serviceKey": api_key,
+        "serviceKey": quote(api_key.strip(), safe=""),
         "inqryBgnDt": start_dt,
         "inqryEndDt": end_dt,
         "type": "json",
