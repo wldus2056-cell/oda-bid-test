@@ -39,7 +39,7 @@ def main():
     webhook_url = os.environ["DISCORD_WEBHOOK_URL"].strip()
 
     now = datetime.now(KST)
-    start = now - timedelta(days=30) #테스트: 조회 기간을 1일에서 30일로 늘림
+    start = now - timedelta(days=30)
     start_dt = to_dt_str(start)
     end_dt = to_dt_str(now)
 
@@ -51,10 +51,9 @@ def main():
     keyword_passed = 0
     koica_passed = 0
 
-#수정됨: 1차, 2차 필터를 하나의 반복문으로 합치고 KOICA 무조건 통과 추가
-for it in items:
+    for it in items:
         title = it.get("bidNtceNm", "")
-        org = str(it.get("dminsttNm", "")) # 안전하게 문자열로 처리
+        org = str(it.get("dminsttNm", ""))
         url = it.get("bidNtceDtlUrl", "")
 
         # 1. 수요기관이 "한국국제협력단"인 경우 필터 무시하고 무조건 통과
@@ -77,10 +76,9 @@ for it in items:
             filtered.append(it)
         else:
             skipped_ai += 1
-            # 💡 추가됨: GitHub Actions 로그에서 AI가 왜 탈락시켰는지 확인용 출력
             print(f"[AI 제외] {title[:30]}... | 기관: {org} | 사유: {reason}")
 
-# 요약 메시지 내용 갱신
+    # 요약 메시지 내용 갱신
     summary_text = (
         f"- 조회기간: {start_dt} ~ {end_dt} (최근 30일)\n"
         f"- 전체 공고: {len(items)}건\n"
@@ -97,7 +95,7 @@ for it in items:
         )
         return
 
-# 디스코드는 메시지/임베드 제한이 있어서 chunk로 나눔
+    # 디스코드는 메시지/임베드 제한이 있어서 chunk로 나눔
     chunk_size = 10
     chunks = [filtered[i:i+chunk_size] for i in range(0, min(len(filtered), 20), chunk_size)]
 
@@ -106,7 +104,6 @@ for it in items:
             continue
         embeds = [build_embed(it) for it in chunk]
         
-        # 첫 번째 메시지에만 요약 정보 포함
         content_msg = f"📢 신규 ODA 관련 입찰공고 알림 ({i}/{len(chunks)})"
         if i == 1:
             content_msg = f"📢 **ODA 입찰공고 알림(테스트 요약)**\n{summary_text}\n\n{content_msg}"
