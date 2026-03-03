@@ -80,7 +80,7 @@ for it in items:
             # 💡 추가됨: GitHub Actions 로그에서 AI가 왜 탈락시켰는지 확인용 출력
             print(f"[AI 제외] {title[:30]}... | 기관: {org} | 사유: {reason}")
 
-    # 요약 메시지 내용 갱신
+# 요약 메시지 내용 갱신
     summary_text = (
         f"- 조회기간: {start_dt} ~ {end_dt} (최근 30일)\n"
         f"- 전체 공고: {len(items)}건\n"
