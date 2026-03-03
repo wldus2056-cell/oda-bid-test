@@ -39,7 +39,8 @@ def main():
     webhook_url = os.environ["DISCORD_WEBHOOK_URL"].strip()
 
     now = datetime.now(KST)
-    start = now - timedelta(days=30) #테스트: 조회 기간을 1일에서 30일로 늘림
+    # 💡 조회기간 20일로 변경 (API 1개월 초과 오류 방지!)
+    start = now - timedelta(days=20) 
     start_dt = to_dt_str(start)
     end_dt = to_dt_str(now)
 
@@ -51,8 +52,8 @@ def main():
     keyword_passed = 0
     koica_passed = 0
 
-#수정됨: 1차, 2차 필터를 하나의 반복문으로 합치고 KOICA 무조건 통과 추가
-for it in items:
+    # 1차, 2차 필터를 하나의 반복문으로 합치고 KOICA 무조건 통과 추가
+    for it in items:
         title = it.get("bidNtceNm", "")
         org = str(it.get("dminsttNm", "")) # 안전하게 문자열로 처리
         url = it.get("bidNtceDtlUrl", "")
@@ -80,12 +81,12 @@ for it in items:
             # 💡 추가됨: GitHub Actions 로그에서 AI가 왜 탈락시켰는지 확인용 출력
             print(f"[AI 제외] {title[:30]}... | 기관: {org} | 사유: {reason}")
 
-# 요약 메시지 내용 갱신
+    # 요약 메시지 내용 갱신
     summary_text = (
-        f"- 조회기간: {start_dt} ~ {end_dt} (최근 30일)\n"
+        f"- 조회기간: {start_dt} ~ {end_dt} (최근 20일)\n"
         f"- 전체 공고: {len(items)}건\n"
         f"- KOICA 자동 통과: {koica_passed}건\n"
-        f"- 키워드 통과 후 AI 검사: {keyword_passed}건\n"
+        f"- 키워드 1차 통과: {keyword_passed}건\n"
         f"- 2차 AI 제외: {skipped_ai}건"
     )
 
@@ -97,7 +98,7 @@ for it in items:
         )
         return
 
-# 디스코드는 메시지/임베드 제한이 있어서 chunk로 나눔
+    # 디스코드는 메시지/임베드 제한이 있어서 chunk로 나눔
     chunk_size = 10
     chunks = [filtered[i:i+chunk_size] for i in range(0, min(len(filtered), 20), chunk_size)]
 
