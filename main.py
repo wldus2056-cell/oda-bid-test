@@ -1,6 +1,5 @@
 # main.py
 import os
-import time
 from datetime import datetime, timedelta, timezone
 
 from g2b import fetch_bid_list
@@ -31,7 +30,7 @@ def build_embed(item: dict) -> dict:
     if url:
         fields.append({"name": "링크", "value": url, "inline": False})
     if ai_reason:
-        fields.append({"name": "AI 판별 근거", "value": str(ai_reason), "inline": False})
+        fields.append({"name": "필터링 근거", "value": str(ai_reason), "inline": False})
 
     return {"title": title, "fields": fields}
 
@@ -64,32 +63,28 @@ def main():
             koica_passed += 1
             continue
 
-        # 2. 1차 키워드 필터
+        # 2. 1차 키워드 필터 (filters.py)
         if not keyword_match(title):
             continue
         
         keyword_passed += 1
 
-        # API 한도 초과 에러를 막기 위해 4초 대기 (1분에 15건 속도 제한 맞춤)
-        print(f"[{keyword_passed}번째 항목 검사 중...] 4초 대기...")
-        time.sleep(4)
-
-        # 3. 2차 Gemini 필터
+        # 3. 2차 하이브리드 필터 (ai_filter.py) - 대기 시간 삭제! ⚡
         is_oda, reason = gemini_is_oda(title, org, url)
         if is_oda:
-            it["_ai_reason"] = f"✅ [AI 합격] {reason}"
+            it["_ai_reason"] = reason
             filtered.append(it)
         else:
             skipped_ai += 1
-            print(f"[AI 제외] {title[:30]}... | 사유: {reason}")
+            print(f"[제외] {title[:30]}... | 사유: {reason}")
 
-    # 요약 메시지 텍스트
     ai_passed = keyword_passed - skipped_ai
+    
     summary_text = (
         f"- 조회기간: {start_dt} ~ {end_dt} (최근 20일)\n"
         f"- 전체 공고: {len(items)}건\n"
         f"- 1차 키워드 통과: {keyword_passed}건 (KOICA {koica_passed}건 별도)\n"
-        f"- 2차 AI 통과: {ai_passed}건 (AI 제외 {skipped_ai}건)"
+        f"- 2차 하이브리드 통과: {ai_passed}건 (제외 {skipped_ai}건)"
     )
 
     if not filtered:
