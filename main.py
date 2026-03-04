@@ -18,7 +18,14 @@ def build_embed(item: dict) -> dict:
     title = item.get("bidNtceNm", "(제목 없음)")
     org = item.get("dminsttNm", "-")
     deadline = item.get("bidQlfctRgstDt", "-")
-    budget = item.get("asignBdgtAmt", "-")
+    
+    # 💡 예산금액 1000단위 콤마(,) 및 '원' 단위 추가 처리
+    raw_budget = item.get("asignBdgtAmt")
+    if raw_budget and str(raw_budget).isdigit():
+        budget = f"{int(raw_budget):,}원"
+    else:
+        budget = str(raw_budget) if raw_budget else "-"
+
     url = item.get("bidNtceDtlUrl", "")
     ai_reason = item.get("_ai_reason")
 
@@ -69,9 +76,10 @@ def main():
         
         keyword_passed += 1
 
-        # 3. 2차 하이브리드 필터 (ai_filter.py) - 대기 시간 삭제! ⚡
+        # 3. 2차 하이브리드 필터 (ai_filter.py)
         is_oda, reason = gemini_is_oda(title, org, url)
         if is_oda:
+            # 💡 [AI 합격] 같은 텍스트를 강제로 붙이지 않고, ai_filter.py가 주는 값(reason)을 그대로 씁니다.
             it["_ai_reason"] = reason
             filtered.append(it)
         else:
