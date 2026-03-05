@@ -112,7 +112,7 @@ def gemini_is_oda(title: str, org: str = "", url: str = "") -> tuple[bool, str]:
         
     # 2단계: 핵심 ODA 키워드가 있으면 즉시 합격 (비용 0원, 속도 빠름)
     if _CORE_PATTERN.search(title):
-        return (True, "⚡ [즉시 합격] 핵심 ODA 키워드 포함")
+        return (True, "⚡관련 ODA 키워드 포함")
         
     # 3단계: 애매한 국가명/단어가 포함된 경우에만 LLM에게 질문 (정확도 확보)
     if _AMBIGUOUS_PATTERN.search(title):
@@ -120,7 +120,7 @@ def gemini_is_oda(title: str, org: str = "", url: str = "") -> tuple[bool, str]:
         return _is_oda_project_llm(title, org, url)
         
     # 4단계: 위 3개 조건에 모두 해당하지 않으면 ODA 사업이 아님
-    return (False, "🛑 [기본 탈락] 관련 키워드 없음")
+    return (False, "🛑 [탈락] 관련 키워드 없음")
 
 
 # ==========================================
