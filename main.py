@@ -89,7 +89,7 @@ def main():
     ai_passed = keyword_passed - skipped_ai
     
     summary_text = (
-        f"- 조회기간: {start_dt} ~ {end_dt} (최근 20일)\n"
+        f"- 조회기간: {start_dt} ~ {end_dt} (최근 2일)\n"
         f"- 전체 공고: {len(items)}건\n"
         f"- 1차 키워드 통과: {keyword_passed}건 (KOICA {koica_passed}건 별도)\n"
         f"- 2차 하이브리드 통과: {ai_passed}건 (제외 {skipped_ai}건)"
