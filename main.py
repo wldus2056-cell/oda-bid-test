@@ -88,11 +88,14 @@ def main():
 
     ai_passed = keyword_passed - skipped_ai
     
+    display_start = start.strftime("%m월 %d일 %H:%M")
+    display_end = now.strftime("%m월 %d일 %H:%M")
+    
     summary_text = (
-        f"- 조회기간: {start_dt} ~ {end_dt} (최근 2일)\n"
+        f"- 조회기간: {display_start} ~ {display_end} (최근 2일)\n"
         f"- 전체 공고: {len(items)}건\n"
         f"- 1차 키워드 통과: {keyword_passed}건 (KOICA {koica_passed}건 별도)\n"
-        f"- 2차 하이브리드 통과: {ai_passed}건 (제외 {skipped_ai}건)"
+        f"- 2차 AI 필터링 통과: {ai_passed}건 (제외 {skipped_ai}건)"
     )
 
     if not filtered:
