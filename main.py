@@ -46,7 +46,7 @@ def main():
     webhook_url = os.environ["DISCORD_WEBHOOK_URL"].strip()
 
     now = datetime.now(KST)
-    start = now - timedelta(days=20) 
+    start = now - timedelta(days=2) 
     start_dt = to_dt_str(start)
     end_dt = to_dt_str(now)
 
