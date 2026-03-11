@@ -63,13 +63,6 @@ def main():
         org = str(it.get("dminsttNm", ""))
         url = it.get("bidNtceDtlUrl", "")
 
-        # 1. 한국국제협력단 무조건 통과
-        if "한국국제협력단" in org:
-            it["_ai_reason"] = "🌟 한국국제협력단(KOICA) 자동 통과"
-            filtered.append(it)
-            koica_passed += 1
-            continue
-
         # 2. 1차 키워드 필터 (filters.py)
         if not keyword_match(title):
             continue
@@ -94,7 +87,7 @@ def main():
     summary_text = (
         f"- 조회기간: {display_start} ~ {display_end} (최근 2일)\n"
         f"- 전체 공고: {len(items)}건\n"
-        f"- 1차 키워드 통과: {keyword_passed}건 (KOICA {koica_passed}건 별도)\n"
+        f"- 1차 키워드 통과: {keyword_passed}건\n"
         f"- 2차 AI 필터링 통과: {ai_passed}건 (제외 {skipped_ai}건)"
     )
 
