@@ -63,11 +63,11 @@ def main():
         org = str(it.get("dminsttNm", ""))
         url = it.get("bidNtceDtlUrl", "")
 
-        # 2. 1차 키워드 필터 (filters.py)
-        if not keyword_match(title):
-            continue
+        # # 2. 1차 키워드 필터 (filters.py)
+        # if not keyword_match(title):
+        #     continue
         
-        keyword_passed += 1
+        # keyword_passed += 1
 
         # 3. 2차 하이브리드 필터 (ai_filter.py)
         is_oda, reason = gemini_is_oda(title, org, url)
