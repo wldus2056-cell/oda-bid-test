@@ -65,7 +65,12 @@ def main():
 
         # 2. 1차 키워드 필터 (filters.py)
         if not keyword_match(title):
+            
+            print(f"[1차탈락] {title}") # ← 추가
+            
             continue
+            
+        print(f"[1차통과] {title}") # ← 추가
         
         keyword_passed += 1
 
@@ -78,7 +83,9 @@ def main():
         else:
             skipped_ai += 1
             print(f"[제외] {title[:30]}... | 사유: {reason}")
-
+        if not is_oda:
+        print(f"[2차탈락] {title} | {reason}")  # ← 추가
+        
     ai_passed = keyword_passed - skipped_ai
     
     display_start = start.strftime("%m월 %d일 %H:%M")
