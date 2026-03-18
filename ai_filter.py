@@ -76,17 +76,14 @@ AMBIGUOUS_KEYWORDS = [
     "파푸아뉴기니", "나우루", "피지", "마셜제도", "니우에", "왈리스푸투나"
 ]
 _AMBIGUOUS_PATTERN = re.compile("|".join(map(re.escape, AMBIGUOUS_KEYWORDS)))
-# ==========================================
-# LLM 호출용 내부 함수
-# ==========================================
-def _is_oda_project_llm(title: str, org: str = "", url: str = "") -> tuple[bool, str]:
-    """실제 Gemini API를 호출하여 문맥을 판별하는 내부 함수"""
-    api_key = os.environ.get("GEMINI_API_KEY")
-    if not api_key:
-        return (False, "GEMINI_API_KEY 없음")
 
-# 💡 프롬프트
-    prompt = f"""
+
+# ==========================================
+# 공통 프롬프트
+# ==========================================
+def _build_prompt(title: str, org: str) -> str:
+    return f"""
+
 너는 ODA(공적개발원조) 및 국제개발협력 컨설팅 전문 기업의 입찰 판별 AI다.
 우리 회사는 아래 [수주 가능 사업 유형]에 해당하는 용역만 수주한다.
 
