@@ -81,7 +81,7 @@ _AMBIGUOUS_PATTERN = re.compile("|".join(map(re.escape, AMBIGUOUS_KEYWORDS)))
 # ==========================================
 # 공통 프롬프트
 # ==========================================
-def _build_prompt(title: str, org: str) -> str:
+def _build_prompt(title: str, org: str, url: str = "") -> str:
     return f"""
 
 너는 ODA(공적개발원조) 및 국제개발협력 컨설팅 전문 기업의 입찰 판별 AI다.
