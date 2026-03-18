@@ -5,6 +5,7 @@ import re
 import requests
 
 GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+DEEPSEEK_ENDPOINT = "https://api.deepseek.com/chat/completions"
 
 # ==========================================
 # 정규식 패턴 세팅
@@ -158,6 +159,19 @@ ODA 시행기관 역량강화 프로그램, 국제협력센터 초청연수 운�
 {{"is_oda": true/false, "reason": "40자 이내 구체적 판단 근거"}}
 """.strip()
 
+
+
+# ==========================================
+# 1순위: Gemini 호출
+# ==========================================
+def _call_gemini(prompt: str) -> tuple[bool, str] | None:
+    """
+    Gemini 호출. 성공 시 결과 반환, 429/오류 시 None 반환 (→ DeepSeek로 폴백)
+    """
+    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+    if not api_key:
+        return None  # 키 없으면 바로 폴백
+
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"temperature": 0.0, "maxOutputTokens": 120}
@@ -172,27 +186,98 @@ ODA 시행기관 역량강화 프로그램, 국제협력센터 초청연수 운�
         )
 
         if r.status_code == 429:
-            return (False, "Gemini 한도 초과")
+            print("   ㄴ[Gemini 한도초과] → DeepSeek로 폴백")
+            return None  # 폴백 신호
+
         if not r.ok:
-            return (False, f"Gemini 오류 {r.status_code}")
+            print(f"   ㄴ[Gemini 오류 {r.status_code}] → DeepSeek로 폴백")
+            return None
 
         data = r.json()
         text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
-
-        start = text.find("{")
-        end = text.rfind("}")
+        start, end = text.find("{"), text.rfind("}")
         if start == -1 or end == -1:
-            return (False, "응답 파싱 실패")
+            return None
 
         obj = json.loads(text[start:end+1])
         is_oda = bool(obj.get("is_oda", False))
         reason = str(obj.get("reason", "")).strip()[:60] or "근거 없음"
-        
-        # LLM이 판단한 것임을 표시
-        return (is_oda, f"🤖 [LLM 판단] {reason}")
+        return (is_oda, f"🤖 [Gemini] {reason}")
 
     except Exception as e:
-        return (False, f"예외: {type(e).__name__}")
+        print(f"   ㄴ[Gemini 예외 {type(e).__name__}] → DeepSeek로 폴백")
+        return None
+
+
+# ==========================================
+# 2순위: DeepSeek 호출
+# ==========================================
+def _call_deepseek(prompt: str) -> tuple[bool, str] | None:
+    """
+    DeepSeek 호출. 성공 시 결과 반환, 오류 시 None 반환 (→ 임시통과)
+    """
+    api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    if not api_key:
+        return None  # 키 없으면 임시통과
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {api_key}"
+    }
+    body = {
+        "model": "deepseek-chat",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.0,
+        "max_tokens": 120,
+    }
+
+    try:
+        r = requests.post(
+            DEEPSEEK_ENDPOINT,
+            headers=headers,
+            json=body,
+            timeout=30
+        )
+
+        if not r.ok:
+            print(f"   ㄴ[DeepSeek 오류 {r.status_code}] → 임시통과")
+            return None
+
+        data = r.json()
+        text = data["choices"][0]["message"]["content"].strip()
+        start, end = text.find("{"), text.rfind("}")
+        if start == -1 or end == -1:
+            return None
+
+        obj = json.loads(text[start:end+1])
+        is_oda = bool(obj.get("is_oda", False))
+        reason = str(obj.get("reason", "")).strip()[:60] or "근거 없음"
+        return (is_oda, f"🤖 [DeepSeek] {reason}")
+
+    except Exception as e:
+        print(f"   ㄴ[DeepSeek 예외 {type(e).__name__}] → 임시통과")
+        return None
+
+
+# ==========================================
+# LLM 호출 통합 (Gemini → DeepSeek → 임시통과)
+# ==========================================
+def _is_oda_project_llm(title: str, org: str = "", url: str = "") -> tuple[bool, str]:
+    prompt = _build_prompt(title, org)
+
+    # 1순위: Gemini
+    result = _call_gemini(prompt)
+    if result is not None:
+        return result
+
+    # 2순위: DeepSeek
+    result = _call_deepseek(prompt)
+    if result is not None:
+        return result
+
+    # 최후: 그냥 탈락
+    return (False, "🛑 [전체실패] Gemini·DeepSeek 모두 한도초과")
+
 
 
 # ==========================================
