@@ -46,7 +46,7 @@ def main():
     webhook_url = os.environ["DISCORD_WEBHOOK_URL"].strip()
 
     now = datetime.now(KST)
-    start = now - timedelta(days=2) 
+    start = now - timedelta(days=1) 
     start_dt = to_dt_str(start)
     end_dt = to_dt_str(now)
 
@@ -92,7 +92,7 @@ def main():
     display_end = now.strftime("%m월 %d일 %H:%M")
     
     summary_text = (
-        f"- 조회기간: {display_start} ~ {display_end} (최근 2일)\n"
+        f"- 조회기간: {display_start} ~ {display_end} (최근 1일)\n"
         f"- 전체 공고: {len(items)}건\n"
         f"- 1차 키워드 통과: {keyword_passed}건\n"
         f"- 2차 AI 필터링 통과: {ai_passed}건 (제외 {skipped_ai}건)"
